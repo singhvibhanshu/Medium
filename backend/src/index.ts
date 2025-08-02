@@ -10,7 +10,7 @@ app.use('/api/v1/blog/*', async (c, next) => {
   const token = header.split(" ")[1]
 
   //@ts-ignore
-  const response = await verify(header, c.env.JWT_SECRET)
+  const response = await verify(token, c.env.JWT_SECRET)
   if (response.id) {
     next()
   } else {
@@ -19,7 +19,7 @@ app.use('/api/v1/blog/*', async (c, next) => {
   }
 })
 
-app.post('/api/v1/signup', async (c) => {
+app.post('/api/v1/user/signup', async (c) => {
   const prisma = new PrismaClient({
     //@ts-ignore
     datasourceUrl: c.env.DATABASE_URL,
@@ -42,7 +42,7 @@ app.post('/api/v1/signup', async (c) => {
   })
 })
 
-app.post('/api/v1/signin', async (c) => {
+app.post('/api/v1/user/signin', async (c) => {
   const prisma = new PrismaClient({
     //@ts-ignore
     datasourceUrl: c.env?.DATABASE_URL,
@@ -75,6 +75,10 @@ app.put('/api/v1/blog', (c) => {
 })
 
 app.get('/api/v1/blog/:id', (c) => {
+  return c.text('Hello Hono!')
+})
+
+app.get('/api/v1/blog/bulk', (c) => {
   return c.text('Hello Hono!')
 })
 
