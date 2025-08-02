@@ -51,27 +51,34 @@ app.post('/api/v1/user/signup', async (c) => {
 })
 
 app.post('/api/v1/user/signin', async (c) => {
+  const body = await c.req.json();
   const prisma = new PrismaClient({
-    //@ts-ignore
-    datasourceUrl: c.env?.DATABASE_URL,
+    datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
 
-  const body = await c.req.json();
-  const user = await prisma.user.findUnique({
-    where: {
-      email: body.email,
-      password: body.password
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        email: body.email,
+        password: body.password,
+      }
+    })
+    if (!user) {
+      c.status(403);
+      return c.json({
+        message: "Incorrect Creds"
+      })
     }
-  });
+    const jwt = await sign({
+      id: user.id
+    }, c.env.JWT_SECRET);
 
-  if (!user) {
-    c.status(403);
-    return c.json({ error: "user not found" });
+    return c.text(jwt)
+  } catch(e) {
+    console.log(e);
+    c.status(411);
+    return c.text('Invalid')
   }
-
-  //@ts-ignore
-  const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
-  return c.json({ jwt });
 })
 
 app.post('/api/v1/blog', (c) => {
