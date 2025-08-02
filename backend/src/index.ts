@@ -2,16 +2,16 @@ import { Hono } from 'hono'
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { sign } from 'hono/jwt'
-import { jwk } from 'hono/jwk'
 
-const app = new Hono<{
-  Bindings: {
-    DATABASE_URL: string
-  }
-}>()
+const app = new Hono()
+
+app.use('/api/v1/blog/*', async (c, next) => {
+  await next();
+})
 
 app.post('/api/v1/signup', async (c) => {
   const prisma = new PrismaClient({
+    //@ts-ignore
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
 
@@ -34,6 +34,7 @@ app.post('/api/v1/signup', async (c) => {
 
 app.post('/api/v1/signin', async (c) => {
   const prisma = new PrismaClient({
+    //@ts-ignore
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
 
@@ -50,6 +51,7 @@ app.post('/api/v1/signin', async (c) => {
     return c.json({ error: "user not found" });
   }
 
+  //@ts-ignore
   const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
   return c.json({ jwt });
 })
